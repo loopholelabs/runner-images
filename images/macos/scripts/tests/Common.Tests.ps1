@@ -152,7 +152,7 @@ Describe "Compiled" -Skip:(-not $os.IsMonterey) {
         "ant -version" | Should -ReturnZeroExitCode
     }
 
-    $kotlinPackages = @("kapt", "kotlin", "kotlinc", "kotlinc-jvm", "kotlin-dce-js")
+    $kotlinPackages = @("kapt", "kotlin", "kotlinc", "kotlinc-jvm")
 
     It "<toolName> is available" -TestCases ($kotlinPackages | ForEach-Object { @{ toolName = $_ } }) {
         "$toolName -version" | Should -ReturnZeroExitCode

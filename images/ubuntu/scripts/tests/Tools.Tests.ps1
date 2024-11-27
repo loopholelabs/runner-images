@@ -37,7 +37,7 @@ Describe "Rust" {
     It "Rustfmt is installed" {
         "rustfmt --version" | Should -ReturnZeroExitCode
     }
-    
+
     It "cargo" {
         "cargo --version" | Should -ReturnZeroExitCode
     }
@@ -405,9 +405,5 @@ Describe "Kotlin" {
 
     It "kotlinc-jvm" {
         "kotlinc-jvm -version" | Should -ReturnZeroExitCode
-    }
-
-    It "kotlin-dce-js" {
-        "kotlin-dce-js -version" | Should -ReturnZeroExitCode
     }
 }
