@@ -4,52 +4,35 @@ packer {
       source  = "github.com/hashicorp/azure"
       version = "1.4.5"
     }
+
+    amazon = {
+      version = "1.3.3"
+      source  = "github.com/hashicorp/amazon"
+    }
+
+    docker = {
+      version = "1.1.0"
+      source  = "github.com/hashicorp/docker"
+    }
   }
 }
 
 locals {
-  managed_image_name = var.managed_image_name != "" ? var.managed_image_name : "packer-${var.image_os}-${var.image_version}"
-}
+  managed_image_name      = var.managed_image_name != "" ? var.managed_image_name : "packer-${var.image_os}-${var.image_version}"
+  managed_image_full_name = var.managed_image_version != "" ? "${local.managed_image_name}-${var.managed_image_version}" : local.managed_image_name
 
-variable "allowed_inbound_ip_addresses" {
-  type    = list(string)
-  default = []
-}
-
-variable "azure_tags" {
-  type    = map(string)
-  default = {}
-}
-
-variable "build_resource_group_name" {
-  type    = string
-  default = "${env("BUILD_RESOURCE_GROUP_NAME")}"
-}
-
-variable "client_cert_path" {
-  type    = string
-  default = "${env("ARM_CLIENT_CERT_PATH")}"
-}
-
-variable "client_id" {
-  type    = string
-  default = "${env("ARM_CLIENT_ID")}"
-}
-
-variable "client_secret" {
-  type      = string
-  default   = "${env("ARM_CLIENT_SECRET")}"
-  sensitive = true
+  oci_image_name = var.oci_image_name_prefix != "" ? "${oci_image_name_prefix}/${local.managed_image_name}" : local.managed_image_name
+  oci_image_tags = compact(concat([var.managed_image_version], var.oci_image_tags))
 }
 
 variable "dockerhub_login" {
   type    = string
-  default = "${env("DOCKERHUB_LOGIN")}"
+  default = env("DOCKERHUB_LOGIN")
 }
 
 variable "dockerhub_password" {
   type    = string
-  default = "${env("DOCKERHUB_PASSWORD")}"
+  default = env("DOCKERHUB_PASSWORD")
 }
 
 variable "helper_script_folder" {
@@ -82,6 +65,52 @@ variable "installer_script_folder" {
   default = "/imagegeneration/installers"
 }
 
+variable "managed_image_name" {
+  type    = string
+  default = ""
+}
+
+variable "managed_image_version" {
+  type    = string
+  default = ""
+}
+
+variable "tmp_folder" {
+  type = string
+}
+
+# Azure variables.
+variable "allowed_inbound_ip_addresses" {
+  type    = list(string)
+  default = []
+}
+
+variable "azure_tags" {
+  type    = map(string)
+  default = {}
+}
+
+variable "build_resource_group_name" {
+  type    = string
+  default = env("BUILD_RESOURCE_GROUP_NAME")
+}
+
+variable "client_cert_path" {
+  type    = string
+  default = env("ARM_CLIENT_CERT_PATH")
+}
+
+variable "client_id" {
+  type    = string
+  default = env("ARM_CLIENT_ID")
+}
+
+variable "client_secret" {
+  type      = string
+  default   = env("ARM_CLIENT_SECRET")
+  sensitive = true
+}
+
 variable "install_password" {
   type      = string
   default   = ""
@@ -90,17 +119,12 @@ variable "install_password" {
 
 variable "location" {
   type    = string
-  default = "${env("ARM_RESOURCE_LOCATION")}"
-}
-
-variable "managed_image_name" {
-  type    = string
-  default = ""
+  default = env("ARM_RESOURCE_LOCATION")
 }
 
 variable "managed_image_resource_group_name" {
   type    = string
-  default = "${env("ARM_RESOURCE_GROUP")}"
+  default = env("ARM_RESOURCE_GROUP")
 }
 
 variable "private_virtual_network_with_public_ip" {
@@ -110,32 +134,32 @@ variable "private_virtual_network_with_public_ip" {
 
 variable "subscription_id" {
   type    = string
-  default = "${env("ARM_SUBSCRIPTION_ID")}"
+  default = env("ARM_SUBSCRIPTION_ID")
 }
 
 variable "temp_resource_group_name" {
   type    = string
-  default = "${env("TEMP_RESOURCE_GROUP_NAME")}"
+  default = env("TEMP_RESOURCE_GROUP_NAME")
 }
 
 variable "tenant_id" {
   type    = string
-  default = "${env("ARM_TENANT_ID")}"
+  default = env("ARM_TENANT_ID")
 }
 
 variable "virtual_network_name" {
   type    = string
-  default = "${env("VNET_NAME")}"
+  default = env("VNET_NAME")
 }
 
 variable "virtual_network_resource_group_name" {
   type    = string
-  default = "${env("VNET_RESOURCE_GROUP")}"
+  default = env("VNET_RESOURCE_GROUP")
 }
 
 variable "virtual_network_subnet_name" {
   type    = string
-  default = "${env("VNET_SUBNET")}"
+  default = env("VNET_SUBNET")
 }
 
 variable "vm_size" {
@@ -143,40 +167,131 @@ variable "vm_size" {
   default = "Standard_D4s_v4"
 }
 
+# AWS variables.
+variable "aws_build_region" {
+  type    = string
+  default = "us-west-2"
+}
+
+variable "aws_ami_regions" {
+  type    = list(string)
+  default = []
+}
+
+# OCI variables.
+variable "oci_image_name_prefix" {
+  type    = string
+  default = ""
+}
+
+variable "oci_image_tags" {
+  type    = list(string)
+  default = []
+}
+
 source "azure-arm" "build_image" {
-  allowed_inbound_ip_addresses           = "${var.allowed_inbound_ip_addresses}"
-  build_resource_group_name              = "${var.build_resource_group_name}"
-  client_cert_path                       = "${var.client_cert_path}"
-  client_id                              = "${var.client_id}"
-  client_secret                          = "${var.client_secret}"
+  allowed_inbound_ip_addresses           = var.allowed_inbound_ip_addresses
+  build_resource_group_name              = var.build_resource_group_name
+  client_cert_path                       = var.client_cert_path
+  client_id                              = var.client_id
+  client_secret                          = var.client_secret
   image_offer                            = "0001-com-ubuntu-server-jammy"
   image_publisher                        = "canonical"
   image_sku                              = "22_04-lts"
-  location                               = "${var.location}"
-  managed_image_name                     = "${local.managed_image_name}"
-  managed_image_resource_group_name      = "${var.managed_image_resource_group_name}"
+  location                               = var.location
+  managed_image_name                     = local.managed_image_full_name
+  managed_image_resource_group_name      = var.managed_image_resource_group_name
   os_disk_size_gb                        = "75"
   os_type                                = "Linux"
-  private_virtual_network_with_public_ip = "${var.private_virtual_network_with_public_ip}"
-  subscription_id                        = "${var.subscription_id}"
-  temp_resource_group_name               = "${var.temp_resource_group_name}"
-  tenant_id                              = "${var.tenant_id}"
-  virtual_network_name                   = "${var.virtual_network_name}"
-  virtual_network_resource_group_name    = "${var.virtual_network_resource_group_name}"
-  virtual_network_subnet_name            = "${var.virtual_network_subnet_name}"
-  vm_size                                = "${var.vm_size}"
+  private_virtual_network_with_public_ip = var.private_virtual_network_with_public_ip
+  subscription_id                        = var.subscription_id
+  temp_resource_group_name               = var.temp_resource_group_name
+  tenant_id                              = var.tenant_id
+  virtual_network_name                   = var.virtual_network_name
+  virtual_network_resource_group_name    = var.virtual_network_resource_group_name
+  virtual_network_subnet_name            = var.virtual_network_subnet_name
+  vm_size                                = var.vm_size
 
   dynamic "azure_tag" {
     for_each = var.azure_tags
     content {
-      name = azure_tag.key
+      name  = azure_tag.key
       value = azure_tag.value
     }
   }
 }
 
+source "amazon-ebs" "build_image" {
+  ami_name      = local.managed_image_full_name
+  instance_type = "m5zn.xlarge"
+  region        = var.aws_build_region
+  ami_regions   = var.aws_ami_regions
+  ssh_username  = "ubuntu"
+
+  source_ami_filter {
+    filters = {
+      name                = "ubuntu/images/*ubuntu-jammy-22.04-amd64-server-*"
+      root-device-type    = "ebs"
+      virtualization-type = "hvm"
+    }
+    most_recent = true
+    owners      = ["099720109477"]
+  }
+
+  launch_block_device_mappings {
+    device_name           = "/dev/sda1"
+    volume_size           = 75
+    volume_type           = "gp3"
+    delete_on_termination = true
+  }
+
+  aws_polling {
+    delay_seconds = 60
+    max_attempts  = 120
+  }
+}
+
+source "docker" "build_image" {
+  build {
+    path = "Dockerfile-ubuntu-22.04"
+  }
+
+  docker_path = "podman"
+  privileged  = true
+  commit      = true
+
+  run_command = [
+    "--detach",
+    "--interactive",
+    "--tty",
+    "--systemd=always",
+    "--entrypoint=/lib/systemd/systemd",
+    "--",
+    "{{.Image}}",
+  ]
+
+  volumes = {
+    "${var.tmp_folder}" = "/tmp",
+  }
+}
+
 build {
-  sources = ["source.azure-arm.build_image"]
+  sources = [
+    "source.azure-arm.build_image",
+    "source.amazon-ebs.build_image",
+    "source.docker.build_image",
+  ]
+
+  provisioner "shell" {
+    only = ["docker.build_image"]
+
+    environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
+    inline = [
+      "apt-get update",
+      "apt-get install -y sudo lsb-release snapd curl wget",
+      "echo 'set -a; source /etc/environment; set +a;' >> /root/.bashrc",
+    ]
+  }
 
   provisioner "shell" {
     execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
@@ -184,7 +299,7 @@ build {
   }
 
   provisioner "file" {
-    destination = "${var.helper_script_folder}"
+    destination = var.helper_script_folder
     source      = "${path.root}/../scripts/helpers"
   }
 
@@ -194,9 +309,9 @@ build {
   }
 
   provisioner "shell" {
-    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}","DEBIAN_FRONTEND=noninteractive"]
+    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "DEBIAN_FRONTEND=noninteractive"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    scripts          = [
+    scripts = [
       "${path.root}/../scripts/build/configure-apt.sh",
       "${path.root}/../scripts/build/install-ms-repos.sh",
       "${path.root}/../scripts/build/configure-apt-sources.sh",
@@ -209,13 +324,13 @@ build {
   }
 
   provisioner "file" {
-    destination = "${var.installer_script_folder}"
+    destination = var.installer_script_folder
     source      = "${path.root}/../scripts/build"
   }
 
   provisioner "file" {
-    destination = "${var.image_folder}"
-    sources     = [
+    destination = var.image_folder
+    sources = [
       "${path.root}/../assets/post-gen",
       "${path.root}/../scripts/tests",
       "${path.root}/../scripts/docs-gen"
@@ -234,7 +349,7 @@ build {
 
   provisioner "shell" {
     execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    inline          = [
+    inline = [
       "mv ${var.image_folder}/docs-gen ${var.image_folder}/SoftwareReport",
       "mv ${var.image_folder}/post-gen ${var.image_folder}/post-generation"
     ]
@@ -273,7 +388,7 @@ build {
   provisioner "shell" {
     environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "DEBIAN_FRONTEND=noninteractive"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    scripts          = [
+    scripts = [
       "${path.root}/../scripts/build/install-actions-cache.sh",
       "${path.root}/../scripts/build/install-runner-package.sh",
       "${path.root}/../scripts/build/install-apt-common.sh",
@@ -368,6 +483,8 @@ build {
   }
 
   provisioner "shell" {
+    except = ["docker.build_image"]
+
     execute_command   = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     expect_disconnect = true
     inline            = ["echo 'Reboot VM'", "sudo reboot"]
@@ -377,10 +494,16 @@ build {
     execute_command     = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     pause_before        = "1m0s"
     scripts             = ["${path.root}/../scripts/build/cleanup.sh"]
-    start_retry_timeout = "10m"
+    start_retry_timeout = "30m"
   }
 
   provisioner "shell" {
+    inline           = ["echo 'yes' | /usr/bin/perl /usr/bin/cpan --version"]
+    valid_exit_codes = [0, 25]
+  }
+
+  provisioner "shell" {
+    execute_command  = "bash -l -i -c '{{ .Vars }} {{ .Path }}'"
     environment_vars = ["IMAGE_VERSION=${var.image_version}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}"]
     inline           = ["pwsh -File ${var.image_folder}/SoftwareReport/Generate-SoftwareReport.ps1 -OutputDirectory ${var.image_folder}", "pwsh -File ${var.image_folder}/tests/RunAll-Tests.ps1 -OutputDirectory ${var.image_folder}"]
   }
@@ -414,8 +537,17 @@ build {
   }
 
   provisioner "shell" {
+    only = ["azure-arm.build_image"]
+
     execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     inline          = ["sleep 30", "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"]
   }
 
+  post-processor "docker-tag" {
+    only = ["docker.build_image"]
+
+    docker_path = "podman"
+    repository  = local.oci_image_name
+    tags        = var.oci_image_tags
+  }
 }
