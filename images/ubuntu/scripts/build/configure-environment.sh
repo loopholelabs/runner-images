@@ -20,9 +20,11 @@ mkdir -p /etc/skel/.config/configstore
 set_etc_environment_variable "XDG_CONFIG_HOME" '$HOME/.config'
 
 # Change waagent entries to use /mnt for swap file
-sed -i 's/ResourceDisk.Format=n/ResourceDisk.Format=y/g' /etc/waagent.conf
-sed -i 's/ResourceDisk.EnableSwap=n/ResourceDisk.EnableSwap=y/g' /etc/waagent.conf
-sed -i 's/ResourceDisk.SwapSizeMB=0/ResourceDisk.SwapSizeMB=4096/g' /etc/waagent.conf
+if [ -f /etc/waagent.conf ]; then
+  sed -i 's/ResourceDisk.Format=n/ResourceDisk.Format=y/g' /etc/waagent.conf
+  sed -i 's/ResourceDisk.EnableSwap=n/ResourceDisk.EnableSwap=y/g' /etc/waagent.conf
+  sed -i 's/ResourceDisk.SwapSizeMB=0/ResourceDisk.SwapSizeMB=4096/g' /etc/waagent.conf
+fi
 
 # Add localhost alias to ::1 IPv6
 sed -i 's/::1 ip6-localhost ip6-loopback/::1     localhost ip6-localhost ip6-loopback/g' /etc/hosts
@@ -57,7 +59,9 @@ chmod +x $HELPER_SCRIPTS/invoke-tests.sh
 ln -s $HELPER_SCRIPTS/invoke-tests.sh /usr/local/bin/invoke_tests
 
 # Disable motd updates metadata
-sed -i 's/ENABLED=1/ENABLED=0/g' /etc/default/motd-news
+if [ -f /etc/default/motd-news ]; then
+  sed -i 's/ENABLED=1/ENABLED=0/g' /etc/default/motd-news
+fi
 
 if [[ -f "/etc/fwupd/daemon.conf" ]]; then
     sed -i 's/UpdateMotd=true/UpdateMotd=false/g' /etc/fwupd/daemon.conf
