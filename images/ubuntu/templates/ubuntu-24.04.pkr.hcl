@@ -282,9 +282,9 @@ source "docker" "build_image" {
     "{{.Image}}",
   ]
 
-  #volumes = {
-  #  "${var.oci_tmp_folder}" = "/tmp",
-  #}
+  volumes = {
+    "${var.oci_tmp_folder}" = "/tmp",
+  }
 }
 
 build {
@@ -495,10 +495,10 @@ build {
     start_retry_timeout = "30m"
   }
 
-  #provisioner "shell" {
-  #  inline           = ["echo 'yes' | /usr/bin/perl /usr/bin/cpan --version"]
-  #  valid_exit_codes = [0, 25]
-  #}
+  provisioner "shell" {
+    inline           = ["echo 'yes' | /usr/bin/perl /usr/bin/cpan --version"]
+    valid_exit_codes = [0, 25]
+  }
 
   provisioner "shell" {
     execute_command  = "bash -l -i -c '{{ .Vars }} {{ .Path }}'"

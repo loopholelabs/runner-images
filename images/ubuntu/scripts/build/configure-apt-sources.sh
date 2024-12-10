@@ -16,7 +16,9 @@ if is_ubuntu24; then
     sed -i 's/http:\/\/azure.archive.ubuntu.com\/ubuntu\//mirror+file:\/etc\/apt\/apt-mirrors.txt/' /etc/apt/sources.list.d/ubuntu.sources
 
     # Apt changes to survive Cloud Init
-    cp -f /etc/apt/sources.list.d/ubuntu.sources  /etc/cloud/templates/sources.list.ubuntu.deb822.tmpl
+    if [ -d /etc/cloud/templates ]; then
+      cp -f /etc/apt/sources.list.d/ubuntu.sources  /etc/cloud/templates/sources.list.ubuntu.deb822.tmpl
+    fi
 else
     sed -i 's/http:\/\/azure.archive.ubuntu.com\/ubuntu\//mirror+file:\/etc\/apt\/apt-mirrors.txt/' /etc/apt/sources.list
 
