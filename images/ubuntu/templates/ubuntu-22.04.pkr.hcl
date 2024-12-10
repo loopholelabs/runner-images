@@ -79,11 +79,6 @@ variable "managed_image_version" {
   default = ""
 }
 
-variable "tmp_folder" {
-  type    = string
-  default = "/tmp/packer-oci-tmp"
-}
-
 # Azure Variables.
 variable "allowed_inbound_ip_addresses" {
   type    = list(string)
@@ -199,6 +194,11 @@ variable "oci_image_tags" {
   default = []
 }
 
+variable "oci_tmp_folder" {
+  type    = string
+  default = "/tmp/packer-oci-tmp"
+}
+
 source "azure-arm" "build_image" {
   allowed_inbound_ip_addresses           = var.allowed_inbound_ip_addresses
   build_resource_group_name              = var.build_resource_group_name
@@ -283,7 +283,7 @@ source "docker" "build_image" {
   ]
 
   volumes = {
-    "${var.tmp_folder}" = "/tmp",
+    "${var.oci_tmp_folder}" = "/tmp",
   }
 }
 
