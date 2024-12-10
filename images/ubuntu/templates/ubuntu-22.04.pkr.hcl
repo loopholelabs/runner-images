@@ -15,6 +15,9 @@ packer {
       source  = "github.com/hashicorp/docker"
     }
   }
+
+  # Require MPL-2.0 version of Packer.
+  required_version = "< 1.10.0"
 }
 
 locals {
