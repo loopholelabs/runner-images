@@ -7,6 +7,7 @@ RUN apt-get update \
       lsb-release \
       snapd \
       curl \
-      wget
+      wget \
+      netcat-openbsd
 
 ENTRYPOINT ["/lib/systemd/systemd"]

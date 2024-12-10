@@ -17,9 +17,9 @@ extract_dotnet_sdk() {
 
     echo "Extracting $archive_name to $destination"
     mkdir "$destination" && tar -C "$destination" -xzf "$archive_name"
-    rsync -qav --remove-source-files "$destination/shared/" /usr/share/dotnet/shared/
-    rsync -qav --remove-source-files "$destination/host/" /usr/share/dotnet/host/
-    rsync -qav --remove-source-files "$destination/sdk/" /usr/share/dotnet/sdk/
+    rsync -qav --remove-source-files --mkpath "$destination/shared/" /usr/share/dotnet/shared/
+    rsync -qav --remove-source-files --mkpath "$destination/host/" /usr/share/dotnet/host/
+    rsync -qav --remove-source-files --mkpath "$destination/sdk/" /usr/share/dotnet/sdk/
     rm -rf "$destination" "$archive_name"
 }
 
