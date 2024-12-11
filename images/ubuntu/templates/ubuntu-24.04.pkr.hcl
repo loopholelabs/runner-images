@@ -184,6 +184,11 @@ variable "aws_tags" {
 }
 
 # OCI Variables.
+variable "oci_ecr_server" {
+  type    = string
+  default = ""
+}
+
 variable "oci_image_name_prefix" {
   type    = string
   default = ""
@@ -531,11 +536,21 @@ build {
     inline          = ["sleep 30", "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"]
   }
 
-  post-processor "docker-tag" {
-    only = ["docker.build_image"]
+  post-processors {
+    post-processor "docker-tag" {
+      only = ["docker.build_image"]
 
-    docker_path = "podman"
-    repository  = local.oci_image_name
-    tags        = local.oci_image_tags
+      docker_path = "podman"
+      repository  = local.oci_image_name
+      tags        = local.oci_image_tags
+    }
+
+    post-processor "docker-push" {
+      only = ["docker.build_image"]
+
+      docker_path  = "podman"
+      ecr_login    = var.oci_ecr_server != ""
+      login_server = var.oci_ecr_server
+    }
   }
 }
