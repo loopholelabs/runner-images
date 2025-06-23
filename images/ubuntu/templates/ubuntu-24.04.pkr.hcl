@@ -54,6 +54,11 @@ variable "image_os" {
   default = "ubuntu24"
 }
 
+variable "image_os_type" {
+  type    = string
+  default = "Linux"
+}
+
 variable "image_version" {
   type    = string
   default = "dev"
@@ -79,6 +84,11 @@ variable "managed_image_version" {
   default = ""
 }
 
+variable "os_disk_size_gb" {
+  type    = number
+  default = 75
+}
+
 # Azure Variables.
 variable "allowed_inbound_ip_addresses" {
   type    = list(string)
@@ -92,7 +102,7 @@ variable "azure_tags" {
 
 variable "build_resource_group_name" {
   type    = string
-  default = env("BUILD_RESOURCE_GROUP_NAME")
+  default = env("BUILD_RG_NAME")
 }
 
 variable "client_cert_path" {
@@ -119,7 +129,12 @@ variable "install_password" {
 
 variable "location" {
   type    = string
-  default = env("ARM_RESOURCE_LOCATION")
+  default = ""
+}
+
+variable "managed_image_name" {
+  type    = string
+  default = ""
 }
 
 variable "managed_image_resource_group_name" {
@@ -167,6 +182,51 @@ variable "vm_size" {
   default = "Standard_D4s_v4"
 }
 
+variable "image_offer" {
+  type    = string
+  default = "ubuntu-24_04-lts"
+}
+
+variable "image_publisher" {
+  type    = string
+  default = "canonical"
+}
+
+variable "image_sku" {
+  type    = string
+  default = "server-gen1"
+}
+
+variable "gallery_name" {
+  type    = string
+  default = env("GALLERY_NAME")
+}
+
+variable "gallery_resource_group_name" {
+  type    = string
+  default = env("GALLERY_RG_NAME")
+}
+
+variable "gallery_image_name" {
+  type    = string
+  default = env("GALLERY_IMAGE_NAME")
+}
+
+variable "gallery_image_version" {
+  type    = string
+  default = env("GALLERY_IMAGE_VERSION")
+}
+
+variable "gallery_storage_account_type" {
+  type    = string
+  default = env("GALLERY_STORAGE_ACCOUNT_TYPE")
+}
+
+variable "use_azure_cli_auth" {
+  type    = bool
+  default = false
+}
+
 # AWS Variables.
 variable "aws_build_region" {
   type    = string
@@ -210,14 +270,15 @@ source "azure-arm" "build_image" {
   client_cert_path                       = var.client_cert_path
   client_id                              = var.client_id
   client_secret                          = var.client_secret
-  image_offer                            = "ubuntu-24_04-lts"
-  image_publisher                        = "canonical"
-  image_sku                              = "server-gen1"
+  use_azure_cli_auth                     = var.use_azure_cli_auth
+  image_offer                            = var.image_offer
+  image_publisher                        = var.image_publisher
+  image_sku                              = var.image_sku
   location                               = var.location
   managed_image_name                     = local.managed_image_full_name
   managed_image_resource_group_name      = var.managed_image_resource_group_name
-  os_disk_size_gb                        = "75"
-  os_type                                = "Linux"
+  os_disk_size_gb                        = var.os_disk_size_gb
+  os_type                                = var.image_os_type
   private_virtual_network_with_public_ip = var.private_virtual_network_with_public_ip
   subscription_id                        = var.subscription_id
   temp_resource_group_name               = var.temp_resource_group_name
@@ -226,6 +287,15 @@ source "azure-arm" "build_image" {
   virtual_network_resource_group_name    = var.virtual_network_resource_group_name
   virtual_network_subnet_name            = var.virtual_network_subnet_name
   vm_size                                = var.vm_size
+
+  shared_image_gallery_destination {
+    subscription         = var.subscription_id
+    gallery_name         = var.gallery_name
+    resource_group       = var.gallery_resource_group_name
+    image_name           = var.gallery_image_name
+    image_version        = var.gallery_image_version
+    storage_account_type = var.gallery_storage_account_type
+  }
 
   dynamic "azure_tag" {
     for_each = var.azure_tags
