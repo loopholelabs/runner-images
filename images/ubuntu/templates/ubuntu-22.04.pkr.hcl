@@ -132,11 +132,6 @@ variable "location" {
   default = ""
 }
 
-variable "managed_image_name" {
-  type    = string
-  default = ""
-}
-
 variable "managed_image_resource_group_name" {
   type    = string
   default = env("ARM_RESOURCE_GROUP")
