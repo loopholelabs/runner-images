@@ -364,12 +364,15 @@ build {
     "source.docker.build_image",
   ]
 
+  # systemd may take a few seconds to start, and it may clear the /tmp folder
+  # used to store the Packer provisioning scripts, so sleep and retry a few
+  # times in case of errors.
   provisioner "shell" {
     only = ["docker.build_image"]
 
-    inline = [
-      "echo 'set -a; source /etc/environment; set +a;' >> /root/.bashrc",
-    ]
+    pause_before = "10s"
+    max_retries  = 10
+    inline       = ["echo 'set -a; source /etc/environment; set +a;' >> /root/.bashrc"]
   }
 
   provisioner "shell" {
