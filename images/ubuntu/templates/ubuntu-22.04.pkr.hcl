@@ -542,6 +542,13 @@ build {
     scripts          = ["${path.root}/../scripts/build/install-docker.sh"]
   }
 
+  provisioner "file" {
+    only = ["docker.build_image"]
+
+    destination = "/etc/docker/daemon.json"
+    source      = "${path.root}/../assets/config/docker/daemon.json"
+  }
+
   provisioner "shell" {
     environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}"]
     execute_command  = "sudo sh -c '{{ .Vars }} pwsh -f {{ .Path }}'"
