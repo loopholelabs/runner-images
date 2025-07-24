@@ -15,25 +15,19 @@ if (-not (Test-Path -Path $edgeDriverPath)) {
     New-Item -Path $edgeDriverPath -ItemType Directory -Force
 }
 
-$versionInfoUrl = "https://msedgedriver.azureedge.net/LATEST_RELEASE_$($edgeVersion.Major)_WINDOWS"
+$versionInfoUrl = "https://msedgedriver.microsoft.com/LATEST_RELEASE_$($edgeVersion.Major)_WINDOWS"
 $versionInfoFile = Invoke-DownloadWithRetry -Url $versionInfoUrl -Path "$edgeDriverPath\versioninfo.txt"
 $latestVersion = Get-Content -Path $versionInfoFile
 
 Write-Host "Download Microsoft Edge WebDriver..."
-$downloadUrl = "https://msedgedriver.azureedge.net/$latestVersion/edgedriver_win64.zip"
+$downloadUrl = "https://msedgedriver.microsoft.com/$latestVersion/edgedriver_win64.zip"
 $archivePath = Invoke-DownloadWithRetry $downloadUrl
 
 Write-Host "Expand Microsoft Edge WebDriver archive..."
 Expand-7ZipArchive -Path $archivePath -DestinationPath $edgeDriverPath
 
 #Validate the EdgeDriver signature
-$signatureThumbprint = @(
-                         "7920AC8FB05E0FFFE21E8FF4B4F03093BA6AC16E",
-                         "0BD8C56733FDCC06F8CB919FF5A200E39B1ACF71",
-                         "F6EECCC7FF116889C2D5466AE7243D7AA7698689",
-                         "6ACE61BAE3F09F4DD2697806D73E022CBFE70EB4"
-                        )
-Test-FileSignature -Path "$edgeDriverPath\msedgedriver.exe" -ExpectedThumbprint $signatureThumbprint
+Test-FileSignature -Path "$edgeDriverPath\msedgedriver.exe" -ExpectedSubject $(Get-MicrosoftPublisher)
 
 Write-Host "Setting the environment variables..."
 [Environment]::SetEnvironmentVariable("EdgeWebDriver", $EdgeDriverPath, "Machine")
