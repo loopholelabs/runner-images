@@ -10,7 +10,7 @@ build {
   # used to store the Packer provisioning scripts, so sleep and retry a few
   # times in case of errors.
   provisioner "shell" {
-    only = ["docker.build_image"]
+    only = ["docker.image"]
 
     pause_before = "10s"
     max_retries  = 10
@@ -184,7 +184,7 @@ build {
   }
 
   provisioner "file" {
-    only = ["docker.build_image"]
+    only = ["docker.image"]
 
     destination = "/etc/docker/daemon.json"
     source      = "${path.root}/../assets/config/docker/daemon.json"
@@ -215,7 +215,7 @@ build {
   }
 
   provisioner "shell" {
-    except = ["docker.build_image"]
+    except = ["docker.image"]
 
     execute_command   = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     expect_disconnect = true
@@ -283,7 +283,7 @@ build {
 
   post-processors {
     post-processor "docker-tag" {
-      only = ["docker.build_image"]
+      only = ["docker.image"]
 
       docker_path = "podman"
       repository  = local.oci_image_name
@@ -291,7 +291,7 @@ build {
     }
 
     post-processor "docker-push" {
-      only = ["docker.build_image"]
+      only = ["docker.image"]
 
       docker_path  = "podman"
       ecr_login    = var.oci_ecr_server != ""
